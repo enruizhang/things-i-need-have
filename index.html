@@ -1,0 +1,2406 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Things">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Things I Need / Things I Have</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-color: #ffffff;
+      --surface: #ffffff;
+      --card: #ffffff;
+      --note: #ffffff;
+      --sub-note: #ffffff;
+      --text: #111111;
+      --muted: #666666;
+      --border: #e5e5e5;
+      --accent: #111111;
+      --button-bg: #111111;
+      --button-text: #ffffff;
+      --text-color: #111111;
+      --title-color: #111111;
+      --accent-color: #111111;
+      --button-color: #111111;
+      --note-color: #ffffff;
+      --sub-note-color: #ffffff;
+      --child-note-color: #ffffff;
+      --page-opacity: 1;
+      --item-opacity: 1;
+      --subitem-opacity: 1;
+      --child-opacity: 1;
+      --compare-opacity: 1;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --radius: 16px;
+      --safe-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text-color);
+      font-family: ui-rounded, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      background-color: var(--bg-color);
+      background-image: var(--bg-image, none);
+      background-position: var(--bg-position, center center);
+      background-size: var(--bg-size, cover);
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      letter-spacing: 0;
+    }
+
+    body::before { content: none; }
+
+    button, input, textarea, select {
+      font: inherit;
+      color: inherit;
+    }
+
+    button {
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      background: var(--button-color);
+      color: var(--button-text);
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      touch-action: manipulation;
+    }
+
+    button:hover { filter: brightness(0.98); transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button.ghost { background: #ffffff; color: #111111; box-shadow: inset 0 0 0 1px var(--border); }
+    button.danger { background: #fff1f1; color: #9b1c1c; box-shadow: inset 0 0 0 1px rgba(155,28,28,0.16); }
+    button.icon { width: 44px; padding: 0; display: inline-grid; place-items: center; }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 0.75rem 0.8rem;
+      outline: none;
+    }
+
+    textarea { min-height: 96px; resize: vertical; }
+    label { display: grid; gap: 0.35rem; font-size: 0.9rem; font-weight: 650; }
+
+    .app {
+      min-height: 100vh;
+      padding: 16px 14px var(--safe-bottom);
+      background: #ffffff;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin: 0 auto 12px;
+      max-width: 1180px;
+    }
+
+    .brand {
+      min-width: 0;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      color: var(--title-color);
+      letter-spacing: 0;
+    }
+
+    h1 { font-size: clamp(26px, 4vw, 32px); line-height: 1.1; font-weight: 700; }
+    h2 { font-size: clamp(1.25rem, 4.5vw, 1.8rem); }
+    h3 { font-size: 1.05rem; }
+    .muted { color: var(--muted); font-size: 0.92rem; }
+
+    .toolbar {
+      display: flex;
+      gap: 0.55rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 0 auto 14px;
+      max-width: 1180px;
+    }
+
+    .toolbar .search { flex: 1 1 210px; }
+
+    .home-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      max-width: 920px;
+      margin: 18px auto;
+    }
+
+    .entry-card {
+      min-height: 180px;
+      padding: 22px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      box-shadow: none;
+      cursor: pointer;
+      transform: none;
+      display: grid;
+      align-content: space-between;
+      gap: 18px;
+    }
+
+    .entry-card:nth-child(2) { background: #ffffff; }
+
+    .entry-card .stats {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 0.93rem;
+    }
+
+    .wall {
+      position: relative;
+      max-width: 1180px;
+      min-height: calc(100vh - 170px);
+      margin: 0 auto;
+      border-radius: 8px;
+      overflow: visible;
+    }
+
+    .empty {
+      max-width: 680px;
+      margin: 60px auto;
+      padding: 24px;
+      border: 1px dashed rgba(0, 0, 0, 0.14);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.48);
+      text-align: center;
+    }
+
+    .note {
+      position: absolute;
+      width: min(78vw, 250px);
+      min-height: 156px;
+      padding: 14px;
+      border-radius: var(--radius);
+      background: var(--note-bg, var(--note-color));
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      opacity: var(--note-opacity, var(--item-opacity));
+      transform: none;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      transition: box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+
+    .note.dragging {
+      z-index: 30;
+      cursor: grabbing;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+      touch-action: none;
+    }
+
+    .note.done { opacity: 0.56; }
+    .note.done .note-title { text-decoration: line-through; }
+
+    .note-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .note-title {
+      font-weight: 780;
+      font-size: 1.03rem;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .note-actions {
+      display: flex;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .note-actions button {
+      width: 32px;
+      min-height: 32px;
+      padding: 0;
+      background: #ffffff;
+      color: #111111;
+      border: 1px solid var(--border);
+      box-shadow: none;
+      font-size: 0.9rem;
+    }
+
+    .note-actions button.danger,
+    .note-actions button[title="删除"] {
+      color: #9b1c1c;
+    }
+
+    .action-btn,
+    .icon-btn,
+    .note-action,
+    .subitem-action,
+    .child-action,
+    .drag-handle,
+    .done-toggle,
+    .edit-btn,
+    .delete-btn,
+    .expand-btn,
+    .note-actions button,
+    .note-actions button span,
+    .note-actions button svg,
+    button.ghost,
+    button.icon {
+      color: #111111;
+    }
+
+    .action-btn svg,
+    .icon-btn svg,
+    .note-action svg,
+    .subitem-action svg,
+    .child-action svg,
+    button svg {
+      color: currentColor;
+      fill: none;
+      stroke: currentColor;
+    }
+
+    .delete-btn,
+    button.danger,
+    .note-actions button[title="删除"] {
+      color: #9b1c1c;
+    }
+
+    button:disabled {
+      color: #9a9a9a;
+      opacity: 0.55;
+    }
+
+    .drag-handle {
+      display: inline-grid;
+      place-items: center;
+      width: 34px;
+      min-height: 34px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.46);
+      color: #111111;
+      border: 1px solid var(--border);
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .preview-list {
+      display: grid;
+      gap: 5px;
+      margin: 10px 0;
+      font-size: 0.9rem;
+      word-break: break-word;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: rgba(48,40,31,0.62);
+    }
+
+    .sub-note { min-height: 138px; opacity: var(--subitem-opacity); }
+    .child-wall {
+      position: relative;
+      min-height: 180px;
+      margin-top: 10px;
+      border-top: 1px dashed rgba(0, 0, 0, 0.12);
+      padding-top: 10px;
+      overflow: visible;
+    }
+
+    .child-note {
+      position: absolute;
+      width: min(60vw, 164px);
+      min-height: 92px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      opacity: var(--child-opacity);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .child-note.done {
+      opacity: 0.52;
+    }
+
+    .child-note.done .note-title {
+      text-decoration: line-through;
+      color: #6f6f6f;
+    }
+
+    .resize-handle {
+      position: absolute;
+      right: 4px;
+      bottom: 4px;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #111111;
+      opacity: 0.68;
+      font-size: 12px;
+      cursor: nwse-resize;
+      user-select: none;
+      touch-action: none;
+      z-index: 4;
+    }
+
+    .forms, .settings-panel {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .panel {
+      padding: 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(0, 0, 0, 0.24);
+      z-index: 2000;
+    }
+
+    .modal-backdrop.show { display: grid; }
+    .modal {
+      width: min(96vw, 520px);
+      max-height: 86vh;
+      overflow: auto;
+      padding: 18px;
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .menu {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .compare-panel {
+      position: fixed;
+      right: 132px;
+      bottom: 26px;
+      width: min(340px, calc(100vw - 28px));
+      max-height: 62vh;
+      overflow: auto;
+      padding: 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, var(--compare-opacity));
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+      z-index: 65;
+      display: none;
+    }
+
+    .compare-panel.show { display: block; }
+    .match-card {
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.88);
+      cursor: pointer;
+    }
+
+    .match-card.compact {
+      display: grid;
+      gap: 3px;
+      padding: 9px 10px;
+    }
+
+    .match-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .match-tag {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      padding: 2px 7px;
+      background: rgba(231, 118, 87, 0.18);
+      color: var(--title-color);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .match-text {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-weight: 760;
+    }
+
+    .electric-cat {
+      position: fixed;
+      right: 22px;
+      bottom: 18px;
+      width: 92px;
+      height: 96px;
+      z-index: 1500;
+      display: none;
+      pointer-events: auto;
+      cursor: pointer;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.12));
+    }
+
+    .cat-body { fill: #ffe37c; stroke: #4b3a25; stroke-width: 3; }
+    .cat-line { stroke: #4b3a25; stroke-width: 3; stroke-linecap: round; fill: none; }
+    .cat-bolt { fill: var(--accent-color); }
+    .electric-cat.customized {
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+    }
+    .electric-cat.customized path { display: none; }
+
+    .cat-bubble {
+      position: fixed;
+      right: 118px;
+      bottom: 34px;
+      width: min(340px, calc(100vw - 28px));
+      max-height: 58vh;
+      overflow: auto;
+      display: none;
+      padding: 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+      z-index: 2200;
+    }
+
+    .cat-bubble.show { display: block; }
+    .cat-bubble .menu button { width: 100%; text-align: left; }
+    .cat-actions {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .side-panel {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: min(50vw, 620px);
+      min-width: 360px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: -12px 0 36px rgba(0,0,0,0.12);
+      z-index: 1000;
+      overflow: hidden;
+      display: none;
+    }
+
+    .side-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: rgba(0,0,0,0.18);
+      z-index: 999;
+    }
+
+    .side-backdrop.show { display: block; }
+
+    .side-panel.show { display: block; }
+    .side-panel .side-wall {
+      position: relative;
+      min-height: 520px;
+      margin-top: 12px;
+    }
+    .side-panel .note { width: min(82vw, 230px); }
+
+    .side-panel-head {
+      position: sticky;
+      top: -18px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 0;
+      background: rgba(255, 255, 255, 0.94);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .side-panel-body {
+      height: calc(100vh - 74px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-top: 12px;
+    }
+
+    .side-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .side-panel-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      min-height: 36px;
+    }
+
+    .side-list-card,
+    .side-sub-card {
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--note-bg, var(--note-color));
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+
+    .side-sub-card {
+      cursor: default;
+      margin-top: 10px;
+      background: rgba(244,244,241,0.88);
+    }
+
+    .side-children {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+      padding-left: 10px;
+      border-left: 2px dashed rgba(0,0,0,0.12);
+    }
+
+    .done-line {
+      opacity: 0.56;
+      text-decoration: line-through;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: rgba(48,40,31,0.92);
+      color: #fff8df;
+      z-index: 3000;
+      transition: 0.2s ease;
+      pointer-events: none;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .transfer-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: rgba(0, 0, 0, 0.22);
+      z-index: 1800;
+    }
+
+    .transfer-backdrop.show { display: block; }
+
+    .move-prompt {
+      position: fixed;
+      left: 50%;
+      bottom: calc(24px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: min(420px, calc(100vw - 28px));
+      max-height: min(72vh, 560px);
+      overflow: auto;
+      display: none;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      box-shadow: 0 18px 56px rgba(0,0,0,0.18);
+      z-index: 2100;
+    }
+
+    .move-prompt.show { display: block; }
+    .move-prompt .cat-actions button { width: 100%; text-align: left; color: #111111; background: #ffffff; }
+    .move-prompt .cat-actions button.primary { color: #ffffff; background: #111111; }
+
+    @media (min-width: 760px) {
+      .app { padding: 24px 24px var(--safe-bottom); }
+      .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .note { width: 260px; }
+      .sub-note { width: 250px; }
+    }
+
+    @media (max-width: 640px) {
+      .toolbar { align-items: stretch; }
+      .toolbar button { flex: 1 1 auto; }
+      .note { width: min(86vw, 300px); }
+      .compare-panel {
+        top: 12px;
+        right: 14px;
+        bottom: auto;
+        width: calc(100vw - 28px);
+        max-height: 55vh;
+      }
+      .electric-cat {
+        top: auto;
+        right: 18px;
+        bottom: calc(18px + env(safe-area-inset-bottom));
+        width: 64px;
+        height: 64px;
+        z-index: 1500;
+      }
+      .cat-bubble {
+        top: auto;
+        right: 12px;
+        bottom: calc(92px + env(safe-area-inset-bottom));
+        width: calc(100vw - 28px);
+        max-height: 46vh;
+        z-index: 2200;
+      }
+      .side-panel {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        width: 100vw;
+        min-width: 0;
+        height: 58vh;
+        padding: 0;
+        border-radius: 0 0 8px 8px;
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 18px 44px rgba(0,0,0,0.12);
+      }
+      .side-panel-head {
+        position: sticky;
+        top: 0;
+        padding: 12px 14px;
+        background: #ffffff;
+      }
+      .side-panel-body {
+        height: calc(58vh - 64px);
+        overflow-y: auto;
+        padding: 12px;
+      }
+      .move-prompt {
+        bottom: calc(18px + env(safe-area-inset-bottom));
+      }
+    }
+
+    @media (max-width: 700px) {
+      :root {
+        --mobile-project-note-width: clamp(142px, calc((100vw - 42px) / 2), 180px);
+        --mobile-sub-note-width: clamp(142px, calc((100vw - 42px) / 2), 180px);
+        --mobile-child-note-width: calc(100% - 4px);
+        --mobile-note-padding: 10px;
+        --mobile-note-radius: 14px;
+      }
+
+      .wall {
+        min-height: calc(100vh - 112px);
+      }
+
+      .note {
+        width: var(--mobile-project-note-width);
+        min-height: 96px;
+        padding: var(--mobile-note-padding);
+        border-radius: var(--mobile-note-radius);
+      }
+
+      .sub-note {
+        width: var(--mobile-sub-note-width);
+        min-height: 92px;
+        padding: var(--mobile-note-padding);
+      }
+
+      .note-title {
+        font-size: 0.82rem;
+        line-height: 1.16;
+      }
+
+      .sub-note .note-title {
+        font-size: 0.76rem;
+      }
+
+      .muted,
+      .meta,
+      .preview-list {
+        font-size: 0.66rem;
+        line-height: 1.2;
+      }
+
+      .preview-list {
+        gap: 3px;
+        margin: 4px 0;
+        max-height: 28px;
+        overflow: hidden;
+      }
+
+      .meta {
+        gap: 4px;
+        margin-top: 4px;
+      }
+
+      .note-head {
+        gap: 4px;
+        margin-bottom: 4px;
+      }
+
+      .note > p.muted,
+      .child-note > p.muted,
+      .side-sub-card .muted {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .note-actions {
+        gap: 3px;
+      }
+
+      .note-actions button,
+      button.icon,
+      .drag-handle {
+        width: 26px;
+        min-width: 26px;
+        min-height: 26px;
+        padding: 0;
+        font-size: 0.82rem;
+      }
+
+      .drag-handle {
+        width: 26px;
+        min-height: 26px;
+      }
+
+      .child-wall {
+        min-height: 168px;
+        margin-top: 8px;
+        padding: 8px 0 22px;
+      }
+
+      .child-note {
+        width: var(--mobile-child-note-width);
+        min-height: 96px;
+        padding: 8px;
+        border-radius: 10px;
+        box-sizing: border-box;
+        overflow-wrap: anywhere;
+      }
+
+      .child-note .note-title {
+        font-size: 0.74rem;
+        line-height: 1.16;
+      }
+
+      .child-note .muted {
+        font-size: 0.62rem;
+      }
+
+      .child-note .note-actions {
+        flex-wrap: wrap;
+        gap: 2px;
+        margin-top: 5px !important;
+      }
+
+      .child-note .note-actions button {
+        width: 26px;
+        min-width: 26px;
+        min-height: 26px;
+        font-size: 0.74rem;
+      }
+
+      .resize-handle {
+        width: 22px;
+        height: 22px;
+        font-size: 13px;
+      }
+
+      .side-list {
+        gap: 8px;
+      }
+
+      .side-panel .note {
+        width: var(--mobile-project-note-width);
+      }
+
+      .side-list-card,
+      .side-sub-card,
+      .match-card {
+        padding: 6px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+      }
+
+      .side-list-card .note-title,
+      .side-sub-card .note-title,
+      .match-text {
+        font-size: 0.74rem;
+      }
+
+      .match-card.compact {
+        gap: 2px;
+        padding: 6px 7px;
+      }
+
+      .match-tag {
+        padding: 1px 4px;
+        font-size: 0.6rem;
+      }
+
+      .side-children {
+        gap: 4px;
+        margin-top: 5px;
+        padding-left: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" class="app"></main>
+  <section id="comparePanel" class="compare-panel" aria-live="polite"></section>
+  <div id="sideBackdrop" class="side-backdrop"></div>
+  <section id="sidePanel" class="side-panel" aria-live="polite"></section>
+  <section id="catBubble" class="cat-bubble" aria-live="polite"></section>
+  <div id="transferBackdrop" class="transfer-backdrop"></div>
+  <section id="movePrompt" class="move-prompt" aria-live="polite"></section>
+  <svg id="electricCat" class="electric-cat" viewBox="0 0 120 120" role="button" tabindex="0" aria-label="电猫菜单">
+    <path class="cat-bolt" d="M83 6 63 45h18L54 96l8-40H45z"/>
+    <path class="cat-body" d="M24 43 36 24l13 15a42 42 0 0 1 22 0l13-15 12 19v31c0 24-17 37-36 37S24 98 24 74z"/>
+    <path class="cat-line" d="M43 66h.1M77 66h.1M54 78c4 4 8 4 12 0M31 76H10M33 85H13M89 76h21M87 85h20"/>
+  </svg>
+  <div id="modalRoot" class="modal-backdrop"></div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const DATA_KEY = "compare_list_v1_data";
+    const SETTINGS_KEY = "compare_list_v1_settings";
+    const POS_KEY = "compare_list_v1_positions";
+    const sections = {
+      shopping: { label: "购物清单", other: "owned", desc: "计划要买、要找、要补充的东西。" },
+      owned: { label: "持有物", other: "shopping", desc: "已经拥有、收藏、存放过的东西。" }
+    };
+
+    const defaultSettings = {
+      bgColor: "#ffffff",
+      bgImage: "",
+      bgPosition: "center center",
+      bgSize: "cover",
+      pageOpacity: 1,
+      itemOpacity: 1,
+      subitemOpacity: 1,
+      childOpacity: 1,
+      textColor: "#111111",
+      titleColor: "#111111",
+      accentColor: "#111111",
+      buttonColor: "#111111",
+      noteColor: "#ffffff",
+      subNoteColor: "#ffffff",
+      childNoteColor: "#ffffff",
+      showCat: false,
+      catPosition: "right-bottom",
+      compareOpacity: 1,
+      catName: "电猫",
+      catImage: ""
+    };
+
+    let data = load(DATA_KEY, { shopping: { items: [] }, owned: { items: [] } });
+    let settings = { ...defaultSettings, ...load(SETTINGS_KEY, {}) };
+    migrateOldDefaultTheme();
+    let positions = load(POS_KEY, {});
+    let currentRoute = {};
+    let pinnedCompare = false;
+    let pendingOwnedThing = null;
+    let transferStep = null;
+    let sidePanelState = { open: false, section: "", view: "list", itemId: null };
+    let compareState = { section: "", itemId: "", expanded: false };
+
+    const app = document.getElementById("app");
+    const modalRoot = document.getElementById("modalRoot");
+    const comparePanel = document.getElementById("comparePanel");
+    const sideBackdrop = document.getElementById("sideBackdrop");
+    const sidePanel = document.getElementById("sidePanel");
+    const catBubble = document.getElementById("catBubble");
+    const transferBackdrop = document.getElementById("transferBackdrop");
+    const movePrompt = document.getElementById("movePrompt");
+    const cat = document.getElementById("electricCat");
+
+    function load(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key)) || fallback; }
+      catch { return fallback; }
+    }
+
+    function saveAll() {
+      ensureQuantities();
+      localStorage.setItem(DATA_KEY, JSON.stringify(data));
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      localStorage.setItem(POS_KEY, JSON.stringify(positions));
+    }
+
+    function migrateOldDefaultTheme() {
+      const oldDefaults = {
+        bgColor: "#f7efe1",
+        textColor: "#30281f",
+        titleColor: "#2b2118",
+        accentColor: "#e77657",
+        buttonColor: "#ffd36e",
+        noteColor: "#fff3a8",
+        pageOpacity: 0.97,
+        itemOpacity: 0.96,
+        subitemOpacity: 0.96,
+        childOpacity: 0.94,
+        compareOpacity: 0.95
+      };
+      Object.entries(oldDefaults).forEach(([key, value]) => {
+        if (settings[key] === value) settings[key] = defaultSettings[key];
+      });
+      const grayDefaults = {
+        bgColor: "#f6f6f3",
+        textColor: "#222222",
+        titleColor: "#222222",
+        accentColor: "#222222",
+        buttonColor: "#222222",
+        subNoteColor: "#fbfbf8",
+        childNoteColor: "#f4f4f1",
+        pageOpacity: 0.88,
+        itemOpacity: 0.98,
+        subitemOpacity: 0.98,
+        childOpacity: 0.98,
+        compareOpacity: 0.88
+      };
+      Object.entries(grayDefaults).forEach(([key, value]) => {
+        if (settings[key] === value) settings[key] = defaultSettings[key];
+      });
+      if (!settings.subNoteColor) settings.subNoteColor = defaultSettings.subNoteColor;
+      if (!settings.childNoteColor) settings.childNoteColor = defaultSettings.childNoteColor;
+    }
+
+    function uid(prefix) {
+      return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    function now() { return new Date().toISOString(); }
+    function formatTime(value) {
+      if (!value) return "未编辑";
+      return new Date(value).toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    }
+
+    function escapeHtml(str = "") {
+      return String(str).replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+    }
+
+    function cleanQuantity(value) {
+      const parsed = parseInt(String(value ?? "").trim(), 10);
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+    }
+
+    function quantityOf(entry) {
+      return cleanQuantity(entry?.quantity);
+    }
+
+    function labelWithQuantity(entry) {
+      return `${entry?.text || ""} ×${quantityOf(entry)}`;
+    }
+
+    function ensureQuantities() {
+      ["shopping", "owned"].forEach(section => {
+        data[section].items.forEach(item => {
+          item.subitems.forEach(sub => {
+            sub.quantity = quantityOf(sub);
+            sub.done = Boolean(sub.done);
+            (sub.children || []).forEach(child => {
+              child.quantity = quantityOf(child);
+              child.done = Boolean(child.done);
+            });
+          });
+        });
+      });
+    }
+
+    function routeTo(hash) { location.hash = hash; }
+
+    function compareLabel(section) {
+      return section === "shopping" ? "对比持有物" : "对比购物清单";
+    }
+
+    function expandLabel(section) {
+      return section === "shopping" ? "展开持有物" : "展开购物清单";
+    }
+
+    function catName() {
+      return (settings.catName || "电猫").trim() || "电猫";
+    }
+
+    function parseRoute() {
+      const hash = location.hash || "#/home";
+      const parts = hash.replace(/^#\//, "").split("/");
+      if (parts[0] === "section") return { page: "section", section: parts[1] };
+      if (parts[0] === "item") return { page: "item", section: parts[1], itemId: parts[2] };
+      if (parts[0] === "settings") return { page: "settings" };
+      return { page: "home" };
+    }
+
+    function applySettings() {
+      const root = document.documentElement;
+      root.style.setProperty("--bg-color", settings.bgColor);
+      root.style.setProperty("--bg-image", settings.bgImage ? `url("${settings.bgImage}")` : "none");
+      root.style.setProperty("--bg-position", settings.bgPosition);
+      root.style.setProperty("--bg-size", settings.bgSize);
+      root.style.setProperty("--page-opacity", settings.pageOpacity);
+      root.style.setProperty("--item-opacity", settings.itemOpacity);
+      root.style.setProperty("--subitem-opacity", settings.subitemOpacity);
+      root.style.setProperty("--child-opacity", settings.childOpacity);
+      root.style.setProperty("--text-color", settings.textColor);
+      root.style.setProperty("--title-color", settings.titleColor);
+      root.style.setProperty("--accent-color", settings.accentColor);
+      root.style.setProperty("--button-color", settings.buttonColor);
+      root.style.setProperty("--note-color", settings.noteColor);
+      root.style.setProperty("--sub-note-color", settings.subNoteColor || defaultSettings.subNoteColor);
+      root.style.setProperty("--child-note-color", settings.childNoteColor || defaultSettings.childNoteColor);
+      root.style.setProperty("--compare-opacity", settings.compareOpacity);
+      cat.style.display = settings.showCat ? "block" : "none";
+      cat.style.backgroundImage = settings.catImage ? `url("${settings.catImage}")` : "";
+      cat.classList.toggle("customized", Boolean(settings.catImage));
+      cat.setAttribute("aria-label", `${catName()}菜单`);
+      cat.style.left = "";
+      cat.style.right = "";
+      cat.style.top = "";
+      cat.style.bottom = "";
+      if (settings.catPosition === "left-bottom") { cat.style.left = "22px"; cat.style.bottom = "18px"; }
+      else if (settings.catPosition === "right-top") { cat.style.right = "22px"; cat.style.top = "78px"; }
+      else if (settings.catPosition === "left-top") { cat.style.left = "22px"; cat.style.top = "78px"; }
+      else { cat.style.right = "22px"; cat.style.bottom = "18px"; }
+    }
+
+    function render() {
+      applySettings();
+      currentRoute = parseRoute();
+      if (currentRoute.page !== "item" && !pinnedCompare) closeCompare();
+      if (currentRoute.page !== "item") closeSidePanel();
+      if (currentRoute.page === "section" && sections[currentRoute.section]) renderSection(currentRoute.section);
+      else if (currentRoute.page === "item") renderItem(currentRoute.section, currentRoute.itemId);
+      else if (currentRoute.page === "settings") renderSettings();
+      else renderHome();
+    }
+
+    function topbar(title, actions = "") {
+      return `<div class="topbar"><div class="brand"><h1>${title}</h1></div><div class="toolbar" style="margin:0">${actions}<button class="icon ghost" title="设置" onclick="routeTo('#/settings')">⚙</button></div></div>`;
+    }
+
+    function renderHome() {
+      app.innerHTML = `${topbar("Things I Need / Things I Have")}
+        <section class="home-grid">
+          ${["shopping","owned"].map((key, i) => {
+            const items = data[key].items;
+            const latest = items.map(x => x.updatedAt).sort().pop();
+            return `<article class="entry-card" onclick="routeTo('#/section/${key}')">
+              <div><h2>${sections[key].label}</h2><p class="muted">${sections[key].desc}</p></div>
+              <div class="stats"><span>${items.length} 个项目</span><span>最近：${formatTime(latest)}</span></div>
+            </article>`;
+          }).join("")}
+        </section>`;
+    }
+
+    function renderSection(section) {
+      const q = sessionStorage.getItem(`search_${section}`) || "";
+      const items = data[section].items.filter(item => item.title.includes(q));
+      app.innerHTML = `${topbar(sections[section].label, `<button class="ghost" onclick="routeTo('#/home')">返回</button>`)}
+        <div class="toolbar">
+          <input class="search" placeholder="搜索项目" value="${escapeHtml(q)}" oninput="sessionStorage.setItem('search_${section}', this.value); render()">
+          <button onclick="openItemModal('${section}')">添加项目</button>
+        </div>
+        <section id="wall" class="wall">${items.length ? "" : `<div class="empty">这里还没有项目。先添加一张便签吧。</div>`}</section>`;
+      const wall = document.getElementById("wall");
+      items.forEach((item, index) => wall.appendChild(noteForItem(section, item, index)));
+      requestAnimationFrame(() => fitWall(wall));
+    }
+
+    function noteForItem(section, item, index) {
+      const note = document.createElement("article");
+      note.className = "note";
+      note.style.setProperty("--note-bg", item.color || settings.noteColor);
+      note.style.setProperty("--tilt", "0deg");
+      applySavedSize(note, item);
+      const pos = getPos(`item:${section}:${item.id}`, index);
+      note.style.left = `${pos.x}px`;
+      note.style.top = `${pos.y}px`;
+      const previews = flattenSubitems(item.subitems).slice(0, 3).map(s => `<div>${s.done ? "✓" : "•"} ${escapeHtml(labelWithQuantity(s))}</div>`).join("");
+      const open = () => routeTo(`#/item/${section}/${item.id}`);
+      note.innerHTML = `<div class="note-head">
+          <div class="note-title">${escapeHtml(item.title)}</div>
+          <span class="drag-handle" title="拖动">↕</span>
+        </div>
+        <div class="muted">${item.subitems.length} 个子项目 · ${countOpen(item.subitems)} 个未完成/未标记</div>
+        <div class="preview-list">${previews || "<span class='muted'>暂无子项目</span>"}</div>
+        <div class="meta"><span>${formatTime(item.updatedAt)}</span><span>
+          <button class="ghost" onclick="event.stopPropagation(); openItemModal('${section}','${item.id}')">编辑</button>
+        </span></div><span class="resize-handle">↘</span>`;
+      note.addEventListener("click", open);
+      note.querySelector(".drag-handle").addEventListener("pointerdown", e => startDrag(e, note, `item:${section}:${item.id}`));
+      note.querySelector(".resize-handle").addEventListener("pointerdown", e => startResize(e, note, item, () => { touch(item); }));
+      note.querySelector(".resize-handle").addEventListener("dblclick", e => { e.stopPropagation(); resetItemSize(section, item.id); });
+      return note;
+    }
+
+    function openSectionPanel(currentSection) {
+      const targetSection = sections[currentSection].other;
+      sidePanelState = { open: true, section: targetSection, view: "list", itemId: null };
+      renderSidePanel();
+    }
+
+    function renderSidePanel() {
+      const section = sidePanelState.section;
+      if (!sidePanelState.open || !section) return;
+      sideBackdrop.classList.add("show");
+      sidePanel.classList.add("show");
+      if (sidePanelState.view === "detail") renderSidePanelDetail(section, sidePanelState.itemId);
+      else renderSidePanelList(section);
+    }
+
+    function renderSidePanelList(section) {
+      const items = data[section].items;
+      sidePanel.innerHTML = `<div class="side-panel-head">
+          <div><h2>${sections[section].label}</h2><div class="muted">快速查看另一边的项目列表</div></div>
+          <div class="note-actions"><button class="side-panel-close" onclick="closeSidePanel()">收起</button></div>
+        </div>
+        <div class="side-panel-body"><div class="side-list">${items.length ? items.map(item => sideListCard(section, item)).join("") : `<div class="empty">这里还没有项目。</div>`}</div></div>`;
+    }
+
+    function sideListCard(section, item) {
+      const preview = flattenSubitems(item.subitems).slice(0, 3).map(sub => `${sub.done ? "✓" : "□"} ${escapeHtml(labelWithQuantity(sub))}`).join("<br>");
+      return `<article class="side-list-card" style="--note-bg:${item.color || settings.noteColor}" onclick="openSidePanelItem('${section}','${item.id}')">
+        <div class="note-title">${escapeHtml(item.title)}</div>
+        <div class="muted">${item.subitems.length} 个子项目 · ${countOpen(item.subitems)} 个未完成/未标记</div>
+        <div class="preview-list">${preview || "<span class='muted'>暂无子项目</span>"}</div>
+      </article>`;
+    }
+
+    function openSidePanelItem(section, itemId) {
+      sidePanelState = { open: true, section, view: "detail", itemId };
+      renderSidePanel();
+    }
+
+    function renderSidePanelDetail(section, itemId) {
+      const item = findItem(section, itemId);
+      if (!item) {
+        sidePanelState = { open: true, section, view: "list", itemId: null };
+        renderSidePanelList(section);
+        return;
+      }
+      sidePanel.innerHTML = `<div class="side-panel-head">
+          <div><h2>${escapeHtml(item.title)}</h2><div class="muted">${sections[section].label}</div></div>
+          <div class="note-actions"><button onclick="sidePanelState.view='list'; sidePanelState.itemId=null; renderSidePanel()">返回列表</button><button class="side-panel-close" onclick="closeSidePanel()">收起</button></div>
+        </div>
+        <div class="side-panel-body"><div class="side-list">${item.subitems.length ? item.subitems.map(sub => sideSubitemCard(sub)).join("") : `<div class="empty">这个项目里还没有子项目。</div>`}</div></div>`;
+    }
+
+    function sideSubitemCard(sub) {
+      const note = sub.note ? `<div class="muted">备注：${escapeHtml(sub.note)}</div>` : "";
+      const children = (sub.children || []).length ? `<div class="side-children">${sub.children.map(child => `<div class="${child.done ? "done-line" : ""}">${child.done ? "✓" : "□"} ${escapeHtml(labelWithQuantity(child))}</div>`).join("")}</div>` : "";
+      return `<article class="side-sub-card" style="--note-bg:${sub.color || settings.subNoteColor || settings.noteColor}">
+        <div class="match-line"><span>${sub.done ? "✓" : "□"}</span><strong class="match-text">${escapeHtml(labelWithQuantity(sub))}</strong></div>
+        ${note}
+        ${children}
+      </article>`;
+    }
+
+    function closeSidePanel() {
+      sidePanel.classList.remove("show");
+      sideBackdrop.classList.remove("show");
+      sidePanel.innerHTML = "";
+      sidePanelState = { open: false, section: "", view: "list", itemId: null };
+    }
+
+    function renderItem(section, itemId) {
+      const item = findItem(section, itemId);
+      if (!item) { routeTo("#/home"); return; }
+      app.innerHTML = `${topbar(escapeHtml(item.title), `<button class="ghost" onclick="routeTo('#/section/${section}')">返回</button>`)}
+        <div class="toolbar">
+          <button onclick="openSubitemMenu('${section}','${item.id}')">添加子项目</button>
+          <button onclick="openSectionPanel('${section}')">${expandLabel(section)}</button>
+          <button class="ghost" onclick="openItemModal('${section}','${item.id}')">样式</button>
+        </div>
+        <section id="wall" class="wall">${item.subitems.length ? "" : `<div class="empty">这张便签里还没有子项目。</div>`}</section>`;
+      const wall = document.getElementById("wall");
+      item.subitems.forEach((sub, index) => wall.appendChild(noteForSubitem(section, item, sub, index)));
+      requestAnimationFrame(() => fitWall(wall));
+    }
+
+    function noteForSubitem(section, item, sub, index) {
+      const note = document.createElement("article");
+      note.className = `note sub-note ${sub.done ? "done" : ""}`;
+      note.style.setProperty("--note-bg", sub.color || settings.subNoteColor || item.color || settings.noteColor);
+      note.style.setProperty("--tilt", "0deg");
+      applySavedSize(note, sub);
+      const pos = sub.position || getPos(`sub:${sub.id}`, index);
+      note.style.left = `${pos.x}px`;
+      note.style.top = `${pos.y}px`;
+      note.innerHTML = `<div class="note-head">
+          <div class="note-title">${escapeHtml(labelWithQuantity(sub))}</div>
+          <span class="drag-handle" title="拖动">↕</span>
+        </div>
+        ${sub.note ? `<p class="muted">${sub.expanded ? escapeHtml(sub.note) : escapeHtml(sub.note).slice(0, 42)}</p>` : ""}
+        <div class="note-actions">
+          <button title="完成" onclick="event.stopPropagation(); toggleSub('${section}','${item.id}','${sub.id}', event)" onpointerup="handleActionPointer(event, () => toggleSub('${section}','${item.id}','${sub.id}'))">${sub.done ? "✓" : "□"}</button>
+          <button title="编辑" onclick="event.stopPropagation(); openSubitemForm('${section}','${item.id}','${sub.id}')">✎</button>
+          <button title="删除" onclick="event.stopPropagation(); deleteSub('${section}','${item.id}','${sub.id}')">×</button>
+        </div>
+        ${sub.type === "group" ? `<div style="margin-top:10px"><button class="ghost" onclick="event.stopPropagation(); toggleExpand('${section}','${item.id}','${sub.id}')">${sub.expanded ? "收起" : "展开"}</button></div>` : ""}
+        ${sub.type === "group" && sub.expanded ? `<div class="child-wall" data-child-wall="${sub.id}"></div><button class="ghost" style="margin-top:8px" onclick="event.stopPropagation(); openChildForm('${section}','${item.id}','${sub.id}')">添加分子项目</button>` : ""}<span class="resize-handle">↘</span>`;
+      note.querySelector(".drag-handle").addEventListener("pointerdown", e => startDrag(e, note, `sub:${sub.id}`, p => { sub.position = p; touch(item); }));
+      note.querySelector(".resize-handle").addEventListener("pointerdown", e => startResize(e, note, sub, () => { touch(item); }));
+      note.querySelector(".resize-handle").addEventListener("dblclick", e => { e.stopPropagation(); resetSubSize(section, item.id, sub.id); });
+      if (sub.type === "group" && sub.expanded) {
+        const childWall = note.querySelector("[data-child-wall]");
+        sub.children.forEach((child, cIndex) => childWall.appendChild(childNote(section, item, sub, child, cIndex)));
+        requestAnimationFrame(() => { clampChildNotes(childWall); fitWall(childWall, 120); });
+      }
+      return note;
+    }
+
+    function childNote(section, item, sub, child, index) {
+      const note = document.createElement("article");
+      note.className = `child-note ${child.done ? "done" : ""}`;
+      note.style.background = child.color || settings.childNoteColor || sub.color || settings.subNoteColor || item.color || settings.noteColor;
+      applySavedSize(note, child);
+      applySavedSize(note, child);
+      const pos = child.position || { x: 12 + (index % 2) * 98, y: 14 + Math.floor(index / 2) * 76 };
+      note.style.left = `${pos.x}px`;
+      note.style.top = `${pos.y}px`;
+      note.innerHTML = `<div class="note-title">${escapeHtml(labelWithQuantity(child))}</div>
+        <div class="note-actions" style="margin-top:8px">
+          <button onclick="event.stopPropagation(); toggleChild('${section}','${item.id}','${sub.id}','${child.id}', event)" onpointerup="handleActionPointer(event, () => toggleChild('${section}','${item.id}','${sub.id}','${child.id}'))">${child.done ? "✓" : "□"}</button>
+          <button onclick="event.stopPropagation(); openChildForm('${section}','${item.id}','${sub.id}','${child.id}')">✎</button>
+          <button onclick="event.stopPropagation(); deleteChild('${section}','${item.id}','${sub.id}','${child.id}')">×</button>
+        </div><span class="resize-handle">↘</span>`;
+      note.querySelectorAll("button").forEach(button => {
+        button.addEventListener("pointerdown", event => event.stopPropagation());
+      });
+      note.querySelector(".resize-handle").addEventListener("pointerdown", e => startResize(e, note, child, () => { touch(item); }, { contain: true }));
+      note.querySelector(".resize-handle").addEventListener("dblclick", e => { e.stopPropagation(); resetChildSize(section, item.id, sub.id, child.id); });
+      note.addEventListener("pointerdown", e => startDrag(e, note, `child:${child.id}`, p => { child.position = p; touch(item); }, { contain: true }));
+      return note;
+    }
+
+    function openItemModal(section, itemId = "") {
+      const item = itemId ? findItem(section, itemId) : { title: "", color: settings.noteColor };
+      showModal(`<h2>${itemId ? "编辑项目" : "添加项目"}</h2>
+        <div class="forms">
+          <label>标题<input id="itemTitle" value="${escapeHtml(item.title)}"></label>
+          <label>便签颜色<input id="itemColor" type="color" value="${item.color || settings.noteColor}"></label>
+        </div>`, () => {
+          const title = document.getElementById("itemTitle").value.trim();
+          if (!title) return toast("请填写标题");
+          if (itemId) {
+            item.title = title; item.color = document.getElementById("itemColor").value; touch(item);
+          } else {
+            data[section].items.push({ id: uid("item"), title, color: document.getElementById("itemColor").value, createdAt: now(), updatedAt: now(), subitems: [] });
+          }
+          saveAll(); closeModal(); render(); toast("已保存");
+        }, itemId ? `<button class="danger" onclick="deleteItem('${section}','${itemId}')">删除</button>` : "");
+    }
+
+    function openSubitemMenu(section, itemId) {
+      showModal(`<h2>添加子项目</h2><div class="menu">
+        <button onclick="openSubitemForm('${section}','${itemId}','','text')">添加子项目</button>
+        <button onclick="openSubitemForm('${section}','${itemId}','','group')">添加母项目</button>
+      </div>`, null, "", false);
+    }
+
+    function openSubitemForm(section, itemId, subId = "", type = "text") {
+      const item = findItem(section, itemId);
+      const sub = subId ? item.subitems.find(s => s.id === subId) : { text: "", note: "", quantity: 1, type, done: false, color: settings.subNoteColor || item.color || settings.noteColor };
+      showModal(`<h2>${subId ? "编辑子项目" : "添加子项目"}</h2>
+        <div class="forms">
+          <label>文字<input id="subText" value="${escapeHtml(sub.text)}"></label>
+          <label>数量<input id="subQuantity" type="number" min="1" step="1" value="${quantityOf(sub)}"></label>
+          ${sub.type !== "text" || type !== "text" ? `<label>备注<textarea id="subNote">${escapeHtml(sub.note || "")}</textarea></label>` : ""}
+          <label>便签颜色<input id="subColor" type="color" value="${sub.color || item.color || settings.noteColor}"></label>
+        </div>`, () => {
+          const text = document.getElementById("subText").value.trim();
+          if (!text) return toast("请填写文字");
+          const note = document.getElementById("subNote")?.value || "";
+          const color = document.getElementById("subColor").value;
+          const quantity = cleanQuantity(document.getElementById("subQuantity").value);
+          let created = null;
+          if (subId) { sub.text = text; sub.note = note; sub.quantity = quantity; sub.color = color; sub.updatedAt = now(); }
+          else {
+            created = { id: uid("sub"), type, text, note, quantity, color, done: false, expanded: false, children: type === "group" ? [] : undefined, createdAt: now(), updatedAt: now(), position: nextPosition(item.subitems.length) };
+            item.subitems.push(created);
+          }
+          touch(item); saveAll(); closeModal(); render(); toast("已保存");
+          if (!subId && section === "shopping") notifySimilarOwned(created);
+        });
+    }
+
+    function openChildForm(section, itemId, subId, childId = "") {
+      const item = findItem(section, itemId);
+      const sub = item.subitems.find(s => s.id === subId);
+      const child = childId ? sub.children.find(c => c.id === childId) : { text: "", quantity: 1, color: settings.childNoteColor || sub.color || item.color || settings.noteColor };
+      showModal(`<h2>${childId ? "编辑分子项目" : "添加分子项目"}</h2>
+        <div class="forms">
+          <label>文字<input id="childText" value="${escapeHtml(child.text)}"></label>
+          <label>数量<input id="childQuantity" type="number" min="1" step="1" value="${quantityOf(child)}"></label>
+          <label>便签颜色<input id="childColor" type="color" value="${child.color || sub.color || item.color || settings.noteColor}"></label>
+        </div>`, () => {
+        const text = document.getElementById("childText").value.trim();
+        if (!text) return toast("请填写文字");
+        const color = document.getElementById("childColor").value;
+        const quantity = cleanQuantity(document.getElementById("childQuantity").value);
+        if (childId) { child.text = text; child.quantity = quantity; child.color = color; child.updatedAt = now(); }
+        else sub.children.push({ id: uid("child"), text, quantity, color, done: false, createdAt: now(), updatedAt: now(), position: { x: 14, y: 14 + sub.children.length * 78 } });
+        touch(item); saveAll(); closeModal(); render(); toast("已保存");
+      });
+    }
+
+    function showModal(body, onSave, extra = "", showSave = true) {
+      modalRoot.classList.add("show");
+      modalRoot.innerHTML = `<div class="modal">${body}<div class="modal-actions">${extra}<button class="ghost" onclick="closeModal()">关闭</button>${showSave ? `<button id="saveModal">保存</button>` : ""}</div></div>`;
+      if (showSave) document.getElementById("saveModal").onclick = onSave;
+    }
+
+    function closeModal() { modalRoot.classList.remove("show"); modalRoot.innerHTML = ""; }
+
+    function deleteItem(section, itemId) {
+      if (!confirm("确定删除这个项目吗？")) return;
+      data[section].items = data[section].items.filter(i => i.id !== itemId);
+      saveAll(); closeModal(); routeTo(`#/section/${section}`); toast("已删除");
+    }
+
+    function deleteSub(section, itemId, subId) {
+      if (!confirm("确定删除这个子项目吗？")) return;
+      const item = findItem(section, itemId);
+      item.subitems = item.subitems.filter(s => s.id !== subId);
+      touch(item); saveAll(); render(); toast("已删除");
+    }
+
+    function deleteChild(section, itemId, subId, childId) {
+      if (!confirm("确定删除这个分子项目吗？")) return;
+      const item = findItem(section, itemId);
+      const sub = item.subitems.find(s => s.id === subId);
+      sub.children = sub.children.filter(c => c.id !== childId);
+      touch(item); saveAll(); render(); toast("已删除");
+    }
+
+    function handleActionPointer(event, action) {
+      event.preventDefault();
+      event.stopPropagation();
+      const target = event.currentTarget;
+      target.dataset.pointerHandled = "1";
+      action();
+      setTimeout(() => { delete target.dataset.pointerHandled; }, 350);
+    }
+
+    function toggleSub(section, itemId, subId, sourceEvent = null) {
+      if (sourceEvent?.type === "click" && sourceEvent.currentTarget?.dataset.pointerHandled) return;
+      const item = findItem(section, itemId);
+      const sub = item.subitems.find(s => s.id === subId);
+      const wasDone = sub.done;
+      sub.done = !sub.done; sub.updatedAt = now(); touch(item); saveAll(); render();
+      if (section === "shopping" && !wasDone && sub.done) promptMoveToOwned(sub);
+    }
+
+    function toggleChild(section, itemId, subId, childId, sourceEvent = null) {
+      if (sourceEvent?.type === "click" && sourceEvent.currentTarget?.dataset.pointerHandled) return;
+      const item = findItem(section, itemId);
+      const child = item.subitems.find(s => s.id === subId).children.find(c => c.id === childId);
+      const wasDone = child.done;
+      child.done = !child.done; child.updatedAt = now(); touch(item); saveAll(); render();
+      if (section === "shopping" && !wasDone && child.done) promptMoveToOwned(child);
+    }
+
+    function toggleExpand(section, itemId, subId) {
+      const item = findItem(section, itemId);
+      const sub = item.subitems.find(s => s.id === subId);
+      sub.expanded = !sub.expanded; touch(item); saveAll(); render();
+    }
+
+    function renderSettings() {
+      app.innerHTML = `${topbar("设置", `<button class="ghost" onclick="history.back()">返回</button>`)}
+        <section class="settings-panel">
+          <div class="panel"><h2>外观</h2><div class="grid2">
+            ${colorInput("背景颜色","bgColor")}${colorInput("文字颜色","textColor")}${colorInput("标题颜色","titleColor")}${colorInput("强调色","accentColor")}${colorInput("按钮颜色","buttonColor")}${colorInput("项目便签默认颜色","noteColor")}${colorInput("子项目便签默认颜色","subNoteColor")}${colorInput("分子项目便签默认颜色","childNoteColor")}
+            ${rangeInput("页面整体透明度","pageOpacity")}${rangeInput("项目便签透明度","itemOpacity")}${rangeInput("子项目便签透明度","subitemOpacity")}${rangeInput("分子项目便签透明度","childOpacity")}${rangeInput("对比面板透明度","compareOpacity")}
+            <label>背景图片位置<input value="${escapeHtml(settings.bgPosition)}" onchange="updateSetting('bgPosition', this.value)"></label>
+            <label>背景图片大小<select onchange="updateSetting('bgSize', this.value)"><option ${sel("cover", settings.bgSize)}>cover</option><option ${sel("contain", settings.bgSize)}>contain</option><option ${sel("auto", settings.bgSize)}>auto</option></select></label>
+            <label>显示装饰电猫<select onchange="updateSetting('showCat', this.value==='true')"><option value="true" ${settings.showCat ? "selected" : ""}>显示</option><option value="false" ${!settings.showCat ? "selected" : ""}>隐藏</option></select></label>
+            <label>电猫位置<select onchange="updateSetting('catPosition', this.value)"><option value="right-bottom" ${sel("right-bottom", settings.catPosition)}>右下</option><option value="left-bottom" ${sel("left-bottom", settings.catPosition)}>左下</option><option value="right-top" ${sel("right-top", settings.catPosition)}>右上</option><option value="left-top" ${sel("left-top", settings.catPosition)}>左上</option></select></label>
+          </div><div class="toolbar" style="margin-top:14px"><input type="file" accept="image/*" onchange="setBgImage(this)"><button class="ghost" onclick="settings.bgImage=''; saveAll(); render();">移除背景图片</button><button onclick="settings={...defaultSettings}; saveAll(); render();">恢复默认样式</button></div></div>
+          <div class="panel"><h2>电猫设置</h2><div class="grid2">
+            <label>电猫名字<input value="${escapeHtml(catName())}" oninput="updateSetting('catName', this.value)"></label>
+            <label>电猫形象 PNG<input type="file" accept="image/png" onchange="setCatImage(this)"></label>
+          </div>
+          <p class="muted">建议上传透明背景 PNG，推荐尺寸 256 × 256 px 或 512 × 512 px。</p>
+          <div class="toolbar" style="margin-top:14px"><button class="ghost" onclick="settings.catImage=''; saveAll(); render(); toast('已恢复默认电猫')">移除自定义电猫图片</button></div></div>
+          <div class="panel"><h2>导入导出</h2><div class="toolbar" style="margin-top:14px">
+            <button onclick="exportAllJson()">导出全部 JSON</button>
+            <button onclick="document.getElementById('importJson').click()">导入 JSON</button>
+            <input id="importJson" type="file" accept="application/json,.json" style="display:none" onchange="importJson(this)">
+            <button onclick="exportCurrent('txt')">导出当前项目 TXT</button>
+            <button onclick="exportCurrent('csv')">导出当前项目 CSV</button>
+            <button class="danger" onclick="clearAll()">清空所有数据</button>
+          </div><p class="muted">导出当前项目需要先进入某个项目详情页。</p></div>
+        </section>`;
+    }
+
+    function colorInput(labelText, key) {
+      return `<label>${labelText}<input type="color" value="${settings[key]}" onchange="updateSetting('${key}', this.value)"></label>`;
+    }
+
+    function rangeInput(labelText, key) {
+      return `<label>${labelText}<input type="range" min="0.35" max="1" step="0.01" value="${settings[key]}" oninput="updateSetting('${key}', Number(this.value))"></label>`;
+    }
+
+    function sel(value, current) { return value === current ? "selected" : ""; }
+    function updateSetting(key, value) { settings[key] = value; saveAll(); applySettings(); }
+
+    function setBgImage(input) {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => { settings.bgImage = reader.result; saveAll(); render(); toast("背景图片已保存到本地"); };
+      reader.readAsDataURL(file);
+    }
+
+    function setCatImage(input) {
+      const file = input.files?.[0];
+      if (!file) return;
+      if (file.type !== "image/png") return toast("请上传 PNG 图片");
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          let maxSize = 512;
+          let dataUrl = resizeImageToPng(img, maxSize);
+          if (dataUrl.length > 700000) dataUrl = resizeImageToPng(img, 384);
+          if (dataUrl.length > 900000) dataUrl = resizeImageToPng(img, 256);
+          settings.catImage = dataUrl;
+          saveAll();
+          render();
+          toast(`${catName()}形象已更新`);
+        };
+        img.onerror = () => toast("图片读取失败");
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resizeImageToPng(img, maxSize) {
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/png");
+    }
+
+    function exportAllJson() {
+      download("things-data.json", JSON.stringify({ data, settings, positions, exportedAt: now() }, null, 2), "application/json");
+    }
+
+    function importJson(input) {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          data = parsed.data || parsed;
+          settings = { ...defaultSettings, ...(parsed.settings || settings) };
+          positions = parsed.positions || positions;
+          saveAll(); render(); toast("已导入");
+        } catch { toast("JSON 格式不正确"); }
+      };
+      reader.readAsText(file);
+    }
+
+    function exportCurrent(format) {
+      const route = parseRoute();
+      if (route.page !== "item") return toast("请先进入一个项目详情页");
+      const item = findItem(route.section, route.itemId);
+      if (!item) return toast("没有找到当前项目");
+      if (format === "txt") download(`${item.title}.txt`, buildTxt(route.section, item), "text/plain");
+      else download(`${item.title}.csv`, buildCsv(route.section, item), "text/csv");
+    }
+
+    function buildTxt(section, item) {
+      const lines = [`${sections[section].label} / ${item.title}`, ""];
+      item.subitems.forEach(s => {
+        lines.push(`${s.type === "group" ? "[-]" : s.done ? "[x]" : "[ ]"} ${labelWithQuantity(s)}`);
+        if (s.note) lines.push(`    备注：${s.note}`);
+        if (s.children) s.children.forEach(c => lines.push(`    ${c.done ? "[x]" : "[ ]"} ${labelWithQuantity(c)}`));
+        lines.push("");
+      });
+      return lines.join("\n");
+    }
+
+    function buildCsv(section, item) {
+      const rows = [["section","itemTitle","type","text","quantity","note","done","parentText","createdAt","updatedAt"]];
+      item.subitems.forEach(s => {
+        rows.push([section,item.title,s.type,s.text,quantityOf(s),s.note || "",s.done,"",s.createdAt,s.updatedAt]);
+        (s.children || []).forEach(c => rows.push([section,item.title,"child",c.text,quantityOf(c),"",c.done,s.text,c.createdAt,c.updatedAt]));
+      });
+      return rows.map(r => r.map(v => `"${String(v ?? "").replaceAll('"','""')}"`).join(",")).join("\n");
+    }
+
+    function ensureQuantities() {
+      ["shopping", "owned"].forEach(section => {
+        data[section].items.forEach(item => {
+          item.subitems.forEach(sub => {
+            if (sub.type === "note") sub.type = "text";
+            sub.type = sub.type === "group" ? "group" : "text";
+            sub.note = sub.note || "";
+            sub.quantity = quantityOf(sub);
+            sub.done = Boolean(sub.done);
+            if (sub.type === "group" && !Array.isArray(sub.children)) sub.children = [];
+            (sub.children || []).forEach(child => {
+              child.note = child.note || "";
+              child.quantity = quantityOf(child);
+              child.done = Boolean(child.done);
+            });
+          });
+        });
+      });
+    }
+
+    function openSubitemMenu(section, itemId) {
+      showModal(`<h2>添加项目类型</h2><div class="menu">
+        <button onclick="openSubitemForm('${section}','${itemId}','','text')">添加子项目</button>
+        <button onclick="openSubitemForm('${section}','${itemId}','','group')">添加母项目</button>
+      </div>`, null, "", false);
+    }
+
+    function openSubitemForm(section, itemId, subId = "", type = "text") {
+      const item = findItem(section, itemId);
+      const nextType = type === "group" ? "group" : "text";
+      const sub = subId ? item.subitems.find(s => s.id === subId) : { text: "", note: "", quantity: 1, type: nextType, done: false, color: settings.subNoteColor || item.color || settings.noteColor };
+      const formType = sub.type === "group" ? "group" : nextType;
+      const title = subId ? (formType === "group" ? "编辑母项目" : "编辑子项目") : (formType === "group" ? "添加母项目" : "添加子项目");
+      showModal(`<h2>${title}</h2>
+        <div class="forms">
+          <label>${formType === "group" ? "母项目名称" : "名称"}<input id="subText" value="${escapeHtml(sub.text)}"></label>
+          <label>数量<input id="subQuantity" type="number" min="1" step="1" value="${quantityOf(sub)}"></label>
+          <label>备注<textarea id="subNote">${escapeHtml(sub.note || "")}</textarea></label>
+          <label>颜色<input id="subColor" type="color" value="${sub.color || item.color || settings.noteColor}"></label>
+        </div>`, () => {
+          const text = document.getElementById("subText").value.trim();
+          if (!text) return toast("请填写名称");
+          const note = document.getElementById("subNote").value || "";
+          const color = document.getElementById("subColor").value;
+          const quantity = cleanQuantity(document.getElementById("subQuantity").value);
+          let created = null;
+          if (subId) {
+            sub.text = text;
+            sub.note = note;
+            sub.quantity = quantity;
+            sub.color = color;
+            sub.type = formType;
+            if (formType === "group" && !Array.isArray(sub.children)) sub.children = [];
+            sub.updatedAt = now();
+          } else {
+            created = { id: uid("sub"), type: formType, text, note, quantity, color, done: false, expanded: false, children: formType === "group" ? [] : undefined, createdAt: now(), updatedAt: now(), position: nextPosition(item.subitems.length) };
+            item.subitems.push(created);
+          }
+          touch(item); saveAll(); closeModal(); render(); toast("已保存");
+          if (!subId && section === "shopping") notifySimilarOwned(created);
+        });
+    }
+
+    function openChildForm(section, itemId, subId, childId = "") {
+      const item = findItem(section, itemId);
+      const sub = item.subitems.find(s => s.id === subId);
+      const child = childId ? sub.children.find(c => c.id === childId) : { text: "", note: "", quantity: 1, color: settings.childNoteColor || sub.color || item.color || settings.noteColor };
+      showModal(`<h2>${childId ? "编辑分子项目" : "添加分子项目"}</h2>
+        <div class="forms">
+          <label>分子项目名称<input id="childText" value="${escapeHtml(child.text)}"></label>
+          <label>数量<input id="childQuantity" type="number" min="1" step="1" value="${quantityOf(child)}"></label>
+          <label>备注<textarea id="childNote">${escapeHtml(child.note || "")}</textarea></label>
+          <label>颜色<input id="childColor" type="color" value="${child.color || sub.color || item.color || settings.noteColor}"></label>
+        </div>`, () => {
+        const text = document.getElementById("childText").value.trim();
+        if (!text) return toast("请填写名称");
+        const note = document.getElementById("childNote").value || "";
+        const color = document.getElementById("childColor").value;
+        const quantity = cleanQuantity(document.getElementById("childQuantity").value);
+        if (childId) { child.text = text; child.note = note; child.quantity = quantity; child.color = color; child.updatedAt = now(); }
+        else sub.children.push({ id: uid("child"), text, note, quantity, color, done: false, createdAt: now(), updatedAt: now(), position: { x: 14, y: 14 + sub.children.length * 78 } });
+        touch(item); saveAll(); closeModal(); render(); toast("已保存");
+      });
+    }
+
+    function sideSubitemCard(sub) {
+      const note = sub.note ? `<div class="muted">备注：${escapeHtml(sub.note)}</div>` : "";
+      const children = (sub.children || []).length ? `<div class="side-children">${sub.children.map(child => `<div class="${child.done ? "done-line" : ""}">${child.done ? "✓" : "□"} ${escapeHtml(labelWithQuantity(child))}${child.note ? `<div class="muted">备注：${escapeHtml(child.note)}</div>` : ""}</div>`).join("")}</div>` : "";
+      return `<article class="side-sub-card" style="--note-bg:${sub.color || settings.subNoteColor || settings.noteColor}">
+        <div class="match-line"><span>${sub.done ? "✓" : "□"}</span><strong class="match-text">${escapeHtml(labelWithQuantity(sub))}</strong></div>
+        ${note}
+        ${children}
+      </article>`;
+    }
+
+    function childNote(section, item, sub, child, index) {
+      const note = document.createElement("article");
+      note.className = `child-note ${child.done ? "done" : ""}`;
+      note.style.background = child.color || settings.childNoteColor || sub.color || settings.subNoteColor || item.color || settings.noteColor;
+      const pos = child.position || { x: 0 + (index % 2) * 104, y: 14 + Math.floor(index / 2) * 96 };
+      note.style.left = `${pos.x}px`;
+      note.style.top = `${pos.y}px`;
+      note.innerHTML = `<div class="note-title">${escapeHtml(labelWithQuantity(child))}</div>
+        ${child.note ? `<p class="muted">${escapeHtml(child.note).slice(0, 42)}</p>` : ""}
+        <div class="note-actions" style="margin-top:8px">
+          <button onclick="event.stopPropagation(); toggleChild('${section}','${item.id}','${sub.id}','${child.id}', event)" onpointerup="handleActionPointer(event, () => toggleChild('${section}','${item.id}','${sub.id}','${child.id}'))">${child.done ? "✓" : "□"}</button>
+          <button onclick="event.stopPropagation(); openChildForm('${section}','${item.id}','${sub.id}','${child.id}')">✎</button>
+          <button onclick="event.stopPropagation(); deleteChild('${section}','${item.id}','${sub.id}','${child.id}')">×</button>
+        </div><span class="resize-handle">↘</span>`;
+      note.querySelectorAll("button").forEach(button => {
+        button.addEventListener("pointerdown", event => event.stopPropagation());
+      });
+      note.querySelector(".resize-handle").addEventListener("pointerdown", e => startResize(e, note, child, () => { touch(item); }, { contain: true }));
+      note.addEventListener("pointerdown", e => startDrag(e, note, `child:${child.id}`, p => { child.position = p; touch(item); }, { contain: true }));
+      return note;
+    }
+
+    function buildTxt(section, item) {
+      const lines = [`${sections[section].label} / ${item.title}`, ""];
+      item.subitems.forEach(s => {
+        lines.push(`${s.type === "group" ? "[-]" : s.done ? "[x]" : "[ ]"} ${labelWithQuantity(s)}`);
+        if (s.note) lines.push(`备注：${s.note}`);
+        (s.children || []).forEach(c => {
+          lines.push(`    ${c.done ? "[x]" : "[ ]"} ${labelWithQuantity(c)}`);
+          if (c.note) lines.push(`    备注：${c.note}`);
+        });
+        lines.push("");
+      });
+      return lines.join("\n");
+    }
+
+    function buildCsv(section, item) {
+      const rows = [["section","itemTitle","type","text","quantity","note","done","parentText","createdAt","updatedAt"]];
+      item.subitems.forEach(s => {
+        rows.push([section,item.title,s.type === "note" ? "text" : s.type,s.text,quantityOf(s),s.note || "",s.done,"",s.createdAt,s.updatedAt]);
+        (s.children || []).forEach(c => rows.push([section,item.title,"child",c.text,quantityOf(c),c.note || "",c.done,s.text,c.createdAt,c.updatedAt]));
+      });
+      return rows.map(r => r.map(v => `"${String(v ?? "").replaceAll('"','""')}"`).join(",")).join("\n");
+    }
+
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast("已准备下载");
+    }
+
+    function clearAll() {
+      if (!confirm("确定清空所有数据吗？")) return;
+      if (!confirm("再次确认：清空后只能通过之前导出的 JSON 恢复。")) return;
+      data = { shopping: { items: [] }, owned: { items: [] } };
+      positions = {};
+      saveAll(); render(); toast("已清空");
+    }
+
+    function toggleCatMenu() {
+      if (catBubble.classList.contains("show")) return closeCatBubble();
+      renderCatMenu();
+    }
+
+    function renderCatMenu() {
+      const route = parseRoute();
+      const section = route.section || "shopping";
+      const compareText = compareLabel(section);
+      showCatBubble(`<div class="note-head"><h3>${catName()}助手</h3><div class="note-actions"><button onclick="closeCatBubble()">×</button></div></div>
+        <div class="menu">
+          <button onclick="catCompareCurrent()">${compareText}</button>
+          <button onclick="findPossibleDuplicates()">查找可能重复</button>
+          <button onclick="showCompletedShopping()">把已完成购物加入持有物</button>
+          <button onclick="showTodayTip()">今日提示</button>
+        </div>`);
+    }
+
+    function showCatBubble(html) {
+      catBubble.innerHTML = html;
+      catBubble.classList.add("show");
+    }
+
+    function closeCatBubble() {
+      catBubble.classList.remove("show");
+      catBubble.innerHTML = "";
+    }
+
+    function catCompareCurrent() {
+      const route = parseRoute();
+      if (route.page !== "item") {
+        showCatBubble(`<div class="note-head"><h3>${catName()}助手</h3><div class="note-actions"><button onclick="closeCatBubble()">×</button></div></div><p>先进入一个项目详情页，再让${catName()}帮你对比。</p>`);
+        return;
+      }
+      closeCatBubble();
+      openCompare(route.section, route.itemId);
+    }
+
+    function notifySimilarOwned(sub) {
+      const matches = searchMatchesInSection("owned", [sub.text, sub.note || ""]).slice(0, 5);
+      if (!matches.length) return;
+      showCatBubble(`<div class="note-head"><h3>${catName()}提醒你：你可能已经有类似的东西。</h3><div class="note-actions"><button onclick="closeCatBubble()">×</button></div></div>
+        ${matches.map(m => matchCard("owned", m)).join("")}`);
+    }
+
+    function promptMoveToOwned(thing) {
+      pendingOwnedThing = {
+        text: thing.text,
+        note: thing.note || "",
+        quantity: quantityOf(thing),
+        type: thing.type || "text",
+        color: thing.color || settings.noteColor
+      };
+      transferStep = "confirm";
+      renderTransferConfirm();
+    }
+
+    function renderTransferConfirm() {
+      if (!pendingOwnedThing) return;
+      transferStep = "confirm";
+      showMovePrompt(`<div class="note-head"><h3>${escapeHtml(catName())}提醒你：要把它加入持有物吗？</h3><div class="note-actions"><button onclick="cancelTransfer()">×</button></div></div>
+        <p><strong>${escapeHtml(labelWithQuantity(pendingOwnedThing))}</strong></p>
+        <div class="cat-actions">
+          <button onclick="openAddToExistingOwned()">加入已有持有物项目</button>
+          <button onclick="createOwnedFromPending()">新建持有物项目</button>
+          <button class="ghost" onclick="cancelTransfer()">暂时不要</button>
+        </div>`);
+    }
+
+    function showMovePrompt(html) {
+      closeCatBubble();
+      closeModal();
+      movePrompt.innerHTML = html;
+      transferBackdrop.classList.add("show");
+      movePrompt.classList.add("show");
+    }
+
+    function closeMovePrompt() {
+      movePrompt.classList.remove("show");
+      transferBackdrop.classList.remove("show");
+      movePrompt.innerHTML = "";
+    }
+
+    function cancelTransfer() {
+      pendingOwnedThing = null;
+      transferStep = null;
+      closeMovePrompt();
+    }
+
+    function openAddToExistingOwned() {
+      if (!pendingOwnedThing) return;
+      transferStep = "choose-owned-project";
+      if (!data.owned.items.length) {
+        showMovePrompt(`<div class="note-head"><h3>加入已有持有物项目</h3><div class="note-actions"><button onclick="cancelTransfer()">×</button></div></div>
+          <p><strong>${escapeHtml(labelWithQuantity(pendingOwnedThing))}</strong></p>
+          <p>可以先让${catName()}新建一个持有物项目。</p>
+          <div class="cat-actions"><button onclick="createOwnedFromPending()">新建持有物项目</button><button class="ghost" onclick="cancelTransfer()">取消</button></div>`);
+        return;
+      }
+      showMovePrompt(`<div class="note-head"><h3>加入已有持有物项目</h3><div class="note-actions"><button onclick="cancelTransfer()">×</button></div></div>
+        <p><strong>${escapeHtml(labelWithQuantity(pendingOwnedThing))}</strong></p>
+        <label>选择项目
+          <select id="ownedTarget">
+            ${data.owned.items.map(item => `<option value="${item.id}">${escapeHtml(item.title)}</option>`).join("")}
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button class="ghost" onclick="cancelTransfer()">取消</button>
+          <button onclick="saveAddToOwnedSelection()">保存</button>
+        </div>`);
+    }
+
+    function saveAddToOwnedSelection() {
+      const select = document.getElementById("ownedTarget");
+      if (!select) return;
+      addThingToOwnedItem(select.value);
+    }
+
+    function addThingToOwnedItem(itemId) {
+      if (!pendingOwnedThing) return;
+      const target = findItem("owned", itemId);
+      if (!target) return toast("没有找到持有物项目");
+      const result = mergeOrAddOwnedThing(target, pendingOwnedThing);
+      touch(target);
+      pendingOwnedThing = null;
+      transferStep = null;
+      saveAll();
+      closeMovePrompt();
+      closeCatBubble();
+      render();
+      if (sidePanelState.open) renderSidePanel();
+      toast(result.merged ? `已合并到持有物：${labelWithQuantity(result.entry)}` : `已加入持有物：${labelWithQuantity(result.entry)}`);
+    }
+
+    function mergeOrAddOwnedThing(targetItem, incoming) {
+      const incomingText = normalizeText(incoming.text);
+      const incomingType = incoming.type || "text";
+      const topMatch = targetItem.subitems.find(sub => {
+        if (normalizeText(sub.text) !== incomingText) return false;
+        if (incomingType === "group" || sub.type === "group") return incomingType === "group" && sub.type === "group";
+        return true;
+      });
+      if (topMatch) return mergeQuantityInto(topMatch, incoming);
+
+      for (const sub of targetItem.subitems) {
+        const childMatch = (sub.children || []).find(child => normalizeText(child.text) === incomingText);
+        if (childMatch) return mergeQuantityInto(childMatch, incoming);
+      }
+
+      const entry = {
+        id: uid("sub"),
+        type: incoming.type === "group" ? "group" : "text",
+        text: incoming.text,
+        note: incoming.note,
+        quantity: quantityOf(incoming),
+        color: incoming.color,
+        done: false,
+        expanded: false,
+        children: incoming.type === "group" ? [] : undefined,
+        createdAt: now(),
+        updatedAt: now(),
+        position: nextPosition(targetItem.subitems.length)
+      };
+      targetItem.subitems.push(entry);
+      return { merged: false, entry };
+    }
+
+    function mergeQuantityInto(existing, incoming) {
+      existing.quantity = quantityOf(existing) + quantityOf(incoming);
+      existing.note = mergeNotes(existing.note || "", incoming.note || "");
+      existing.updatedAt = now();
+      return { merged: true, entry: existing };
+    }
+
+    function mergeNotes(existingNote, incomingNote) {
+      const existing = existingNote.trim();
+      const incoming = incomingNote.trim();
+      if (!incoming) return existing;
+      if (!existing) return incoming;
+      if (normalizeText(existing) === normalizeText(incoming)) return existing;
+      return `${existing}\n补充：${incoming}`;
+    }
+
+    function createOwnedFromPending() {
+      if (!pendingOwnedThing) return;
+      const item = {
+        id: uid("item"),
+        title: pendingOwnedThing.text,
+        color: pendingOwnedThing.color,
+        createdAt: now(),
+        updatedAt: now(),
+        subitems: [{
+          id: uid("sub"),
+          type: pendingOwnedThing.type === "group" ? "group" : "text",
+          text: pendingOwnedThing.text,
+          note: pendingOwnedThing.note,
+          quantity: pendingOwnedThing.quantity,
+          color: pendingOwnedThing.color,
+          done: false,
+          expanded: false,
+          children: pendingOwnedThing.type === "group" ? [] : undefined,
+          createdAt: now(),
+          updatedAt: now(),
+          position: nextPosition(0)
+        }]
+      };
+      data.owned.items.push(item);
+      pendingOwnedThing = null;
+      transferStep = null;
+      saveAll();
+      closeMovePrompt();
+      closeCatBubble();
+      render();
+      if (sidePanelState.open) renderSidePanel();
+      toast(`已加入持有物：${labelWithQuantity(item.subitems[0])}`);
+    }
+
+    function showCompletedShopping() {
+      const completed = [];
+      data.shopping.items.forEach(item => flattenSubitems(item.subitems).forEach(sub => {
+        if (sub.done) completed.push({ item, sub });
+      }));
+      showCatBubble(`<div class="note-head"><h3>${catName()}提醒你：已完成购物</h3><div class="note-actions"><button onclick="renderCatMenu()">←</button><button onclick="closeCatBubble()">×</button></div></div>
+        ${completed.length ? completed.slice(0, 16).map(({ item, sub }, index) => `<div class="match-card">
+          <strong>${escapeHtml(labelWithQuantity(sub))}</strong><br><span class="muted">${escapeHtml(item.title)}</span>
+          <div class="cat-actions"><button onclick="pickCompletedShopping(${index})">加入持有物</button></div>
+        </div>`).join("") : "<p>购物清单里暂时没有已完成项目。</p>"}`);
+      window.completedShoppingCache = completed;
+    }
+
+    function pickCompletedShopping(index) {
+      const picked = window.completedShoppingCache?.[index]?.sub;
+      if (picked) promptMoveToOwned(picked);
+    }
+
+    function findPossibleDuplicates() {
+      const results = [];
+      const shoppingEntries = collectSearchEntries("shopping");
+      const ownedEntries = collectSearchEntries("owned");
+      shoppingEntries.forEach(query => {
+        ownedEntries.forEach(target => {
+          const matched = compareSearchEntries(query, target);
+          if (matched) results.push({ query, ...target, matchType: matched.type, rank: matched.rank });
+        });
+      });
+      const displayResults = prepareMatchResults(results);
+      showCatBubble(`<div class="note-head"><h3>${catName()}提醒你：可能重复</h3><div class="note-actions"><button onclick="renderCatMenu()">←</button><button onclick="closeCatBubble()">×</button></div></div>
+        ${displayResults.all.length ? displayResults.all.slice(0, 12).map(m => matchCard("owned", m, m.query.text, true)).join("") : "<p>暂时没发现购物清单和持有物之间的相似内容。</p>"}`);
+    }
+
+    function showTodayTip() {
+      const tips = [
+        "买东西前先搜一下持有物，常常会省下一笔。",
+        "给便签换颜色，可以把紧急、已确认、想比较的东西分开。",
+        "完成购物后顺手加入持有物，下次对比会更聪明。",
+        "备注里写材质、颜色、尺寸，之后查找会更准。"
+      ];
+      showCatBubble(`<div class="note-head"><h3>${catName()}提醒你：今日提示</h3><div class="note-actions"><button onclick="renderCatMenu()">←</button><button onclick="closeCatBubble()">×</button></div></div>
+        <p>${tips[Math.floor(Math.random() * tips.length)]}</p>`);
+    }
+
+    function searchMatchesInSection(targetSection, phrases) {
+      const query = {
+        text: phrases.filter(Boolean).join(" "),
+        note: "",
+        item: { title: "" },
+        parentText: ""
+      };
+      return collectSearchEntries(targetSection).map(target => {
+        const matched = compareSearchEntries(query, target);
+        return matched ? { ...target, matchType: matched.type, rank: matched.rank } : null;
+      }).filter(Boolean).sort((a, b) => a.rank - b.rank);
+    }
+
+    function matchLabel(matchType) {
+      if (matchType === "包含相同关键词") return "包含";
+      return matchType || "可能相似";
+    }
+
+    function matchCard(section, match, queryText = "", fromCatBubble = false) {
+      const label = matchLabel(match.matchType);
+      const showQuery = label === "可能相似" && queryText && normalizeText(queryText) !== normalizeText(match.text);
+      const closeAction = fromCatBubble ? "closeCatBubble();" : "closeCompare();";
+      return `<div class="match-card compact" onclick="routeTo('#/item/${section}/${match.item.id}'); ${closeAction}">
+        <div class="match-line"><span class="match-tag">${escapeHtml(label)}</span><span class="match-text">${escapeHtml(labelWithQuantity(match))}</span></div>
+        <div class="muted">项目：${escapeHtml(match.item.title)}</div>
+        ${match.query ? `<div class="muted">当前清单：×${quantityOf(match.query)}</div>` : ""}
+        ${showQuery ? `<div class="muted">对应：${escapeHtml(queryText)}</div>` : ""}
+      </div>`;
+    }
+
+    function matchKey(match) {
+      return [
+        match.section,
+        match.item?.id || "",
+        match.entryId || "",
+        normalizeText(match.text)
+      ].join("|");
+    }
+
+    function prepareMatchResults(matches) {
+      const byKey = new Map();
+      matches.forEach(match => {
+        const key = matchKey(match);
+        const old = byKey.get(key);
+        if (!old || match.rank < old.rank) byKey.set(key, match);
+      });
+      const all = [...byKey.values()].sort((a, b) =>
+        a.rank - b.rank ||
+        normalizeText(a.text).localeCompare(normalizeText(b.text), "zh-CN") ||
+        normalizeText(a.item.title).localeCompare(normalizeText(b.item.title), "zh-CN")
+      );
+      const strong = all.filter(match => match.rank <= 2);
+      const weak = all.filter(match => match.rank > 2);
+      return { all, strong, weak };
+    }
+
+    function visibleMatchResults(prepared, expanded) {
+      if (expanded) return prepared.all;
+      return [...prepared.strong.slice(0, 10), ...prepared.weak.slice(0, 5)];
+    }
+
+    function expandCompareResults() {
+      compareState.expanded = true;
+      renderComparePanel();
+    }
+
+    function openCompare(section, itemId) {
+      compareState = { section, itemId, expanded: false };
+      renderComparePanel();
+    }
+
+    function renderComparePanel() {
+      const { section, itemId, expanded } = compareState;
+      const item = findItem(section, itemId);
+      if (!item) return;
+      const other = sections[section].other;
+      const queryEntries = collectSearchEntries(section, item);
+      const targetEntries = collectSearchEntries(other);
+      const matches = [];
+      queryEntries.forEach(query => {
+        targetEntries.forEach(target => {
+          const matched = compareSearchEntries(query, target);
+          if (matched) matches.push({ ...target, query, matchType: matched.type, rank: matched.rank });
+        });
+      });
+      const prepared = prepareMatchResults(matches);
+      const visible = visibleMatchResults(prepared, expanded);
+      const hiddenCount = Math.max(0, prepared.all.length - visible.length);
+      comparePanel.classList.add("show");
+      comparePanel.innerHTML = `<div class="note-head"><h3>${sections[other].label}中找到 ${prepared.all.length} 个相关项</h3><div class="note-actions"><button onclick="pinnedCompare=!pinnedCompare; renderComparePanel()">${pinnedCompare ? "已固定" : "固定"}</button><button onclick="closeCompare()">×</button></div></div>
+        ${visible.length ? visible.map(m => matchCard(other, m, m.query.text)).join("") : `<p>暂时没找到相关项。</p>`}
+        ${hiddenCount ? `<button class="ghost" style="width:100%;margin-top:10px" onclick="expandCompareResults()">还有 ${hiddenCount} 个结果</button>` : ""}`;
+    }
+
+    function closeCompare() { comparePanel.classList.remove("show"); comparePanel.innerHTML = ""; }
+
+    function collectSearchEntries(section, onlyItem = null) {
+      const items = onlyItem ? [onlyItem] : data[section].items;
+      const entries = [];
+      items.forEach(item => {
+        item.subitems.forEach(sub => {
+          entries.push({
+            section,
+            item,
+            entryId: sub.id || `sub:${normalizeText(sub.text)}`,
+            text: sub.text || "",
+            quantity: quantityOf(sub),
+            note: sub.note || "",
+            parentText: "",
+            kind: sub.type === "group" ? "母项目" : "子项目"
+          });
+          (sub.children || []).forEach(child => {
+            entries.push({
+              section,
+              item,
+              entryId: child.id || `child:${sub.id || normalizeText(sub.text)}:${normalizeText(child.text)}`,
+              text: child.text || "",
+              quantity: quantityOf(child),
+              note: child.note || "",
+              parentText: sub.text || "",
+              kind: "分子项目"
+            });
+          });
+        });
+      });
+      return entries;
+    }
+
+    function normalizeText(value) {
+      return String(value || "")
+        .replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+    }
+
+    function searchableText(entry) {
+      return normalizeText([entry.text, entry.note, entry.parentText, entry.item?.title].filter(Boolean).join(" "));
+    }
+
+    function keywords(text) {
+      const normalized = normalizeText(text);
+      if (!normalized) return [];
+      const tokens = normalized.split(/[\s,，。.;；、/\\|]+/).filter(Boolean);
+      const chars = /[\u4e00-\u9fa5]/.test(normalized) ? [...normalized.replace(/\s/g, "")] : [];
+      return [...new Set([...tokens, ...chars])];
+    }
+
+    function compareSearchEntries(a, b) {
+      const aText = normalizeText(a.text);
+      const bText = normalizeText(b.text);
+      if (aText && bText && aText === bText) return { rank: 1, type: "完全相同" };
+      if (aText && bText && (aText.includes(bText) || bText.includes(aText))) return { rank: 2, type: "包含相同关键词" };
+      const aSearch = searchableText(a);
+      const bSearch = searchableText(b);
+      if (aSearch && bSearch && ((bText && aSearch.includes(bText)) || (aText && bSearch.includes(aText)))) return { rank: 2, type: "包含相同关键词" };
+      const aWords = keywords(aSearch);
+      const bWords = new Set(keywords(bSearch));
+      if (aWords.some(word => bWords.has(word))) return { rank: 3, type: "可能相似" };
+      return null;
+    }
+
+    function runInternalMatchTests() {
+      const shoppingItem = { title: "测试购物", subitems: [{ id: "s1", type: "text", text: "1", done: false }] };
+      const ownedItem = { title: "测试持有", subitems: [{ id: "o1", type: "text", text: "1", done: false }] };
+      const query = collectEntriesForTest("shopping", shoppingItem)[0];
+      const target = collectEntriesForTest("owned", ownedItem)[0];
+      const matched = compareSearchEntries(query, target);
+      if (!matched || matched.type !== "完全相同") console.warn("Internal match test failed: shopping 1 should match owned 1");
+    }
+
+    function collectEntriesForTest(section, item) {
+      const old = data[section]?.items;
+      data[section].items = [item];
+      const entries = collectSearchEntries(section);
+      data[section].items = old;
+      return entries;
+    }
+
+    function startDrag(e, el, key, afterMove, options = {}) {
+      e.preventDefault();
+      e.stopPropagation();
+      el.classList.add("dragging");
+      const rect = el.getBoundingClientRect();
+      const parent = el.parentElement;
+      const parentRect = parent.getBoundingClientRect();
+      const shiftX = e.clientX - rect.left;
+      const shiftY = e.clientY - rect.top;
+      el.setPointerCapture?.(e.pointerId);
+      const move = ev => {
+        let x = ev.clientX - parentRect.left - shiftX;
+        let y = ev.clientY - parentRect.top - shiftY;
+        if (options.contain) {
+          const noteWidth = el.offsetWidth;
+          const noteHeight = el.offsetHeight;
+          const maxX = Math.max(0, parent.clientWidth - noteWidth);
+          const wantedBottom = y + noteHeight + 12;
+          if (wantedBottom > parent.clientHeight) parent.style.minHeight = `${wantedBottom}px`;
+          const maxY = Math.max(0, parent.clientHeight - noteHeight);
+          x = Math.max(0, Math.min(x, maxX));
+          y = Math.max(0, Math.min(y, maxY));
+        } else {
+          x = Math.max(0, x);
+          y = Math.max(0, y);
+        }
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+      };
+      const up = ev => {
+        el.classList.remove("dragging");
+        const p = { x: parseInt(el.style.left, 10) || 0, y: parseInt(el.style.top, 10) || 0 };
+        positions[key] = p;
+        afterMove?.(p);
+        saveAll();
+        fitWall(el.parentElement);
+        document.removeEventListener("pointermove", move);
+        document.removeEventListener("pointerup", up);
+      };
+      document.addEventListener("pointermove", move);
+      document.addEventListener("pointerup", up, { once: true });
+    }
+
+    function applySavedSize(el, entry) {
+      if (!entry?.size) return;
+      if (entry.size.width) el.style.width = `${entry.size.width}px`;
+      if (entry.size.height) el.style.height = `${entry.size.height}px`;
+    }
+
+    function startResize(e, el, entry, afterResize, options = {}) {
+      e.preventDefault();
+      e.stopPropagation();
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startWidth = el.offsetWidth;
+      const startHeight = el.offsetHeight;
+      const parent = el.parentElement;
+      el.setPointerCapture?.(e.pointerId);
+      const mobile = window.matchMedia?.("(max-width: 700px)").matches;
+      const minWidth = options.contain ? 64 : mobile ? 72 : 120;
+      const minHeight = options.contain ? 44 : mobile ? 52 : 80;
+      const maxPageWidth = mobile ? window.innerWidth - 40 : 480;
+      const maxHeight = mobile ? Math.round(window.innerHeight * 0.6) : 420;
+      const move = ev => {
+        let width = startWidth + ev.clientX - startX;
+        let height = startHeight + ev.clientY - startY;
+        let maxWidth = maxPageWidth;
+        if (options.contain) {
+          const x = parseInt(el.style.left, 10) || 0;
+          maxWidth = Math.max(minWidth, parent.clientWidth - x);
+        }
+        width = Math.max(minWidth, Math.min(width, maxWidth));
+        height = Math.max(minHeight, Math.min(height, maxHeight));
+        el.style.width = `${width}px`;
+        el.style.height = `${height}px`;
+        if (options.contain) {
+          const bottom = (parseInt(el.style.top, 10) || 0) + height + 18;
+          if (bottom > parent.clientHeight) parent.style.minHeight = `${bottom}px`;
+        }
+      };
+      const up = () => {
+        entry.size = { width: Math.round(el.offsetWidth), height: Math.round(el.offsetHeight) };
+        afterResize?.();
+        saveAll();
+        if (options.contain) clampChildNotes(parent);
+        fitWall(parent);
+        document.removeEventListener("pointermove", move);
+        document.removeEventListener("pointerup", up);
+      };
+      document.addEventListener("pointermove", move);
+      document.addEventListener("pointerup", up, { once: true });
+    }
+
+    function resetItemSize(section, itemId) {
+      const item = findItem(section, itemId);
+      if (!item) return;
+      delete item.size;
+      touch(item);
+      saveAll();
+      render();
+      toast("已恢复默认大小");
+    }
+
+    function resetSubSize(section, itemId, subId) {
+      const item = findItem(section, itemId);
+      const sub = item?.subitems.find(s => s.id === subId);
+      if (!sub) return;
+      delete sub.size;
+      touch(item);
+      saveAll();
+      render();
+      toast("已恢复默认大小");
+    }
+
+    function resetChildSize(section, itemId, subId, childId) {
+      const item = findItem(section, itemId);
+      const sub = item?.subitems.find(s => s.id === subId);
+      const child = sub?.children?.find(c => c.id === childId);
+      if (!child) return;
+      delete child.size;
+      touch(item);
+      saveAll();
+      render();
+      toast("已恢复默认大小");
+    }
+
+    function clampChildNotes(container) {
+      if (!container) return;
+      [...container.querySelectorAll(".child-note")].forEach(child => {
+        const maxX = Math.max(0, container.clientWidth - child.offsetWidth);
+        const x = Math.max(0, Math.min(parseInt(child.style.left, 10) || 0, maxX));
+        const bottom = (parseInt(child.style.top, 10) || 0) + child.offsetHeight + 18;
+        if (bottom > container.clientHeight) container.style.minHeight = `${bottom}px`;
+        const maxY = Math.max(0, container.clientHeight - child.offsetHeight);
+        const y = Math.max(0, Math.min(parseInt(child.style.top, 10) || 0, maxY));
+        child.style.left = `${x}px`;
+        child.style.top = `${y}px`;
+      });
+    }
+
+    function getPos(key, index) {
+      return positions[key] || nextPosition(index);
+    }
+
+    function nextPosition(index) {
+      const isMobile = window.matchMedia?.("(max-width: 700px)").matches;
+      const width = isMobile ? Math.min(180, Math.max(142, (window.innerWidth - 42) / 2)) : Math.min(window.innerWidth - 42, 280);
+      const height = isMobile ? 116 : 190;
+      const gap = isMobile ? 10 : 22;
+      const cols = Math.max(1, Math.floor((Math.min(window.innerWidth, 1180) - 20) / width));
+      return { x: 8 + (index % cols) * (width + gap), y: 12 + Math.floor(index / cols) * height };
+    }
+
+    function fitWall(wall, min = 320) {
+      if (!wall) return;
+      let bottom = min;
+      [...wall.children].forEach(child => {
+        if (child.classList.contains("empty")) return;
+        bottom = Math.max(bottom, child.offsetTop + child.offsetHeight + 80);
+      });
+      wall.style.minHeight = `${bottom}px`;
+    }
+
+    function findItem(section, itemId) {
+      return data[section]?.items.find(i => i.id === itemId);
+    }
+
+    function touch(item) {
+      item.updatedAt = now();
+    }
+
+    function flattenSubitems(subitems) {
+      return subitems.flatMap(s => [s, ...(s.children || [])]);
+    }
+
+    function countOpen(subitems) {
+      return flattenSubitems(subitems).filter(s => !s.done).length;
+    }
+
+    function toast(message) {
+      const el = document.getElementById("toast");
+      el.textContent = message;
+      el.classList.add("show");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => el.classList.remove("show"), 1800);
+    }
+
+    window.addEventListener("hashchange", render);
+    window.addEventListener("resize", () => requestAnimationFrame(render));
+    modalRoot.addEventListener("click", e => { if (e.target === modalRoot) closeModal(); });
+    sideBackdrop.addEventListener("click", closeSidePanel);
+    transferBackdrop.addEventListener("click", cancelTransfer);
+    window.addEventListener("keydown", e => {
+      if (e.key !== "Escape") return;
+      if (pendingOwnedThing) cancelTransfer();
+      else if (sidePanelState.open) closeSidePanel();
+    });
+    cat.addEventListener("click", toggleCatMenu);
+    cat.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleCatMenu();
+      }
+    });
+    if (!location.hash) location.hash = "#/home";
+    ensureQuantities();
+    saveAll();
+    runInternalMatchTests();
+    render();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js');
+      });
+    }
+  </script>
+</body>
+</html>
